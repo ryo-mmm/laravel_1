@@ -16,6 +16,12 @@ RUN apt update && apt install -y \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
+# NodeSourceリポジトリを追加し、Node.js LTSバージョンをインストール
+RUN apt install -y curl \
+    && curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
 # Laravel開発に一般的に必要なPHP拡張をインストール
 # pdo_mysql, zip, gd, mbstring, exif, pcntl, bcmath, intl
 RUN docker-php-ext-install pdo_mysql zip opcache gd mbstring exif pcntl bcmath intl
