@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -25,7 +26,8 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
+        // フォームを表示するビューを返す
+        return view('tasks.create');
     }
 
     /**
@@ -33,7 +35,23 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // 1. バリデーション (データ検証)
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        // 2. データベースへの保存
+        // Auth::user()からリレーションを通じてタスクを作成し、user_idを自動で設定させる
+        Auth::user()->tasks()->create([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            // 他のカラムはデフォルト値が適用される (is_completed = false)
+        ]);
+
+        // 3. 成功メッセージと共にタスク一覧へリダイレクト
+        return redirect()->route('tasks.index')
+                        ->with('status', 'タスクが正常に登録されました。');
     }
 
     /**
