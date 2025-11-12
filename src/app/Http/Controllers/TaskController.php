@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Task;
 
 class TaskController extends Controller
 {
@@ -65,7 +66,7 @@ class TaskController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Task $task)
     {
         // ★ 注意: ステップ5で認可機能を入れるまでは、ここでユーザーチェックは行いません。
 
@@ -78,7 +79,7 @@ class TaskController extends Controller
      * Update the specified resource in storage.
      * * モデルバインディング: URLの {task} パラメータに基づき Task インスタンスを自動取得
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Task $task)
     {
         // 1. バリデーション
         $validated = $request->validate([
@@ -103,8 +104,13 @@ class TaskController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Task $task)
     {
-        //
+        // 1. データの削除を実行
+        $task->delete();
+
+        // 2. 成功メッセージと共にタスク一覧へリダイレクト
+        return redirect()->route('tasks.index')
+                        ->with('status', 'タスクが正常に削除されました。');
     }
 }
