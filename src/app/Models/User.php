@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use App\Models\Task;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,5 +46,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * ユーザーが持つタスクを取得するリレーションを定義
+     */
+    public function tasks(): HasMany
+    {
+        // ユーザーID (user_id) を外部キーとして、複数の Task モデルと関連付ける
+        return $this->hasMany(Task::class);
     }
 }
