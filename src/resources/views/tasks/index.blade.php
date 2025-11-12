@@ -36,7 +36,12 @@
                                     {{-- アクションボタン --}}
                                     <div class="flex space-x-2">
                                         <a href="{{ route('tasks.edit', $task) }}" class="text-indigo-600 hover:text-indigo-900">編集</a>
-                                        {{-- 削除フォームは後で実装 --}}
+
+                                        <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('本当にこのタスクを削除しますか？');">
+                                            @csrf
+                                            @method('delete') {{-- ★ 必須: DELETEメソッドを指定 --}}
+                                            <button type="submit" class="text-red-600 hover:text-red-900">削除</button>
+                                        </form>
                                     </div>
                                 </li>
                             @endforeach

@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskController extends Controller
 {
+    use AuthorizesRequests;
+    
     /**
      * Display a listing of the resource.
      */
@@ -65,24 +71,61 @@ class TaskController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Task $task)
     {
-        //
+        // このタスクを編集する権限があるかチェック
+        // TaskPolicyのupdateメソッドを呼び出す
+        $this->authorize('update', $task);
+
+        return view('tasks.edit', [
+            'task' => $task,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
+     * * モデルバインディング: URLの {task} パラメータに基づき Task インスタンスを自動取得
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Task $task)
     {
-        //
+        // このタスクを編集する権限があるかチェック
+        // TaskPolicyのupdateメソッドを呼び出す
+        $this->authorize('update', $task);
+
+        // 1. バリデーション
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'is_completed' => 'boolean', // チェックボックスの状態を受け取る
+        ]);
+
+        // 2. データの更新
+        $task->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            // is_completed が送信されていない場合は false を設定
+            'is_completed' => $request->has('is_completed'),
+        ]);
+
+        // 3. 成功メッセージと共にタスク一覧へリダイレクト
+        return redirect()->route('tasks.index')
+                        ->with('status', 'タスクが正常に更新されました。');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Task $task)
     {
-        //
+        // ★ 追記: このタスクを削除する権限があるかチェック
+        // TaskPolicyのdeleteメソッドを呼び出す
+        $this->authorize('delete', $task);
+
+        // 1. データの削除を実行
+        $task->delete();
+
+        // 2. 成功メッセージと共にタスク一覧へリダイレクト
+        return redirect()->route('tasks.index')
+                        ->with('status', 'タスクが正常に削除されました。');
     }
 }
