@@ -67,15 +67,37 @@ class TaskController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        // ★ 注意: ステップ5で認可機能を入れるまでは、ここでユーザーチェックは行いません。
+
+        return view('tasks.edit', [
+            'task' => $task,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
+     * * モデルバインディング: URLの {task} パラメータに基づき Task インスタンスを自動取得
      */
     public function update(Request $request, string $id)
     {
-        //
+        // 1. バリデーション
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'is_completed' => 'boolean', // チェックボックスの状態を受け取る
+        ]);
+
+        // 2. データの更新
+        $task->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            // is_completed が送信されていない場合は false を設定
+            'is_completed' => $request->has('is_completed'),
+        ]);
+
+        // 3. 成功メッセージと共にタスク一覧へリダイレクト
+        return redirect()->route('tasks.index')
+                        ->with('status', 'タスクが正常に更新されました。');
     }
 
     /**
