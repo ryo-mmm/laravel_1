@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskController extends Controller
 {
+    use AuthorizesRequests;
+    
     /**
      * Display a listing of the resource.
      */
@@ -68,7 +73,9 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        // ★ 注意: ステップ5で認可機能を入れるまでは、ここでユーザーチェックは行いません。
+        // このタスクを編集する権限があるかチェック
+        // TaskPolicyのupdateメソッドを呼び出す
+        $this->authorize('update', $task);
 
         return view('tasks.edit', [
             'task' => $task,
@@ -81,6 +88,10 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
+        // このタスクを編集する権限があるかチェック
+        // TaskPolicyのupdateメソッドを呼び出す
+        $this->authorize('update', $task);
+
         // 1. バリデーション
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -106,6 +117,10 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        // ★ 追記: このタスクを削除する権限があるかチェック
+        // TaskPolicyのdeleteメソッドを呼び出す
+        $this->authorize('delete', $task);
+
         // 1. データの削除を実行
         $task->delete();
 
