@@ -23,6 +23,5 @@ Route::middleware('auth')->group(function () {
     // ★ 修正: タスク管理のリソースルーティングを認証グループ内に移動
     Route::resource('tasks', TaskController::class);
 });
-// ★ 修正前（誤った位置）にあった行は削除
 
 require __DIR__.'/auth.php';
