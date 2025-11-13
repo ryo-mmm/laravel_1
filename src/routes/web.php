@@ -4,24 +4,34 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// ★ 1. ログイン/ログアウト状態でアクセス可能なルート
+//    ルート / が存在しないため、ユーザーがログアウトした後にエラーになるのを防ぐ
 Route::get('/', function () {
-    return view('welcome');
+    // ユーザーがログインしている場合はタスク一覧へリダイレクト
+    if (Auth::check()) {
+        return redirect()->route('tasks.index');
+    }
+    // ログインしていない場合はログインページへ
+    return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// ★ 認証済みのユーザーのみアクセス可能なルートをグループ化
+// 認証済みのユーザーのみアクセス可能なルートをグループ化
 Route::middleware('auth')->group(function () {
+
+    // タスク管理のリソースルーティング (最重要)
+    Route::resource('tasks', TaskController::class);
 
     // プロフィール関連のルート
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // ★ 修正: タスク管理のリソースルーティングを認証グループ内に移動
-    Route::resource('tasks', TaskController::class);
 });
 
+// ★ 2. 認証ルート (Breezeのログイン、登録などのルート定義)
 require __DIR__.'/auth.php';
